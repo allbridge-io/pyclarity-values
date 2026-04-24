@@ -36,9 +36,14 @@ def deserialize_address(address_bytes):
 
 
 def deserialize_lp_string(bytes_reader, prefix_bytes=1, max_length=128):
-    length_hex = bytes_reader.read_bytes(prefix_bytes).hex()
-    length = int(length_hex, 16)
-    content = bytes_reader.read_bytes(length).decode('utf-8')
+    length_bytes = bytes_reader.read_bytes(prefix_bytes)
+    length = int.from_bytes(length_bytes, 'big')
+    content_bytes = bytes_reader.read_bytes(length)
+    try:
+        content = content_bytes.decode('utf-8')
+    except UnicodeDecodeError:
+        content = content_bytes.hex()
+
     return create_lp_string(content, prefix_bytes, max_length)
 
 
@@ -68,11 +73,13 @@ def deserialize_cv(serialized_clarity_value: Union[BytesReader, bytes, str]) -> 
     elif type == ClarityType.BoolFalse.value:
         return false_cv()
     elif type == ClarityType.PrincipalStandard.value:
-        s_address = deserialize_address(bytes_reader.internal_bytes)
+        address_bytes = bytes_reader.read_bytes(21)
+        s_address = deserialize_address(address_bytes)
         return standard_principal_cv_from_address(s_address)
     elif type == ClarityType.PrincipalContract.value:
-        c_address = deserialize_address(bytes_reader.internal_bytes)
-        contract_name = deserialize_lp_string(bytes_reader.internal_bytes)
+        address_bytes = bytes_reader.read_bytes(21)
+        c_address = deserialize_address(address_bytes)
+        contract_name = deserialize_lp_string(bytes_reader)
         return contract_principal_cv_from_address(c_address, contract_name)
     elif type == ClarityType.ResponseOk.value:
         return response_ok_cv(deserialize_cv(bytes_reader))

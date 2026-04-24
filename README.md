@@ -34,8 +34,8 @@ pip install .
 ## Usage
 
 ```python
-from clarity import deserialize_cv, serialize_cv, principal_cv, address_to_string
-from clarity import UIntCV, StandardPrincipalCV, Address
+from pyclarity_values import deserialize_cv, serialize_cv, principal_cv, address_to_string
+from pyclarity_values import UIntCV, StandardPrincipalCV, Address
 
 # Deserialize UInt
 cv = deserialize_cv(bytes.fromhex("0100000000000000000000000000002a"))
